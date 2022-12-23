@@ -1,0 +1,153 @@
+psql --username=freecodecamp --dbname=postgres
+
+CREATE DATABASE universe;
+
+\c universe
+
+CREATE TABLE galaxy(
+    galaxy_id SERIAL PRIMARY KEY, 
+    name VARCHAR(40) UNIQUE,
+    scientific_name TEXT, 
+    width NUMERIC, 
+    n_stars INT, 
+    speed INT, 
+    life BOOLEAN, 
+    reach_100 BOOLEAN
+);
+
+ALTER TABLE galaxy ALTER COLUMN name SET NOT NULL;
+
+CREATE TABLE star(
+    star_id SERIAL PRIMARY KEY, 
+    name VARCHAR(40) UNIQUE,
+    scientific_name TEXT, 
+    radius NUMERIC, 
+    age INT, 
+    speed INT, 
+    life BOOLEAN, 
+    supernova BOOLEAN,
+    galaxy_id INT
+);
+
+ALTER TABLE star ALTER COLUMN name SET NOT NULL;
+
+ALTER TABLE star
+ADD CONSTRAINT fk_galaxy_id
+FOREIGN KEY(galaxy_id) 
+REFERENCES galaxy(galaxy_id)
+;
+
+CREATE TABLE planet(
+    planet_id SERIAL PRIMARY KEY, 
+    name VARCHAR(40) UNIQUE,
+    scientific_name TEXT, 
+    radius NUMERIC, 
+    age INT, 
+    speed INT, 
+    life BOOLEAN, 
+    locked_orbit BOOLEAN, 
+    star_id INT
+);
+
+ALTER TABLE planet ALTER COLUMN name SET NOT NULL;
+
+ALTER TABLE planet
+ADD CONSTRAINT fk_star_id
+FOREIGN KEY(star_id) 
+REFERENCES star(star_id)
+;
+
+CREATE TABLE moon(
+    moon_id SERIAL PRIMARY KEY, 
+    name VARCHAR(40) UNIQUE,
+    scientific_name TEXT, 
+    radius NUMERIC, 
+    age INT, 
+    speed INT, 
+    protection BOOLEAN, 
+    rotation BOOLEAN, 
+    planet_id INT
+);
+
+ALTER TABLE moon ALTER COLUMN name SET NOT NULL;
+
+ALTER TABLE moon
+ADD CONSTRAINT fk_planet_id
+FOREIGN KEY(planet_id) 
+REFERENCES planet(planet_id)
+;
+
+CREATE TABLE black_hole(
+    black_hole_id SERIAL PRIMARY KEY, 
+    name VARCHAR(40) UNIQUE,
+    scientific_name TEXT, 
+    radius NUMERIC, 
+    age INT, 
+    mass INT, 
+    destructive BOOLEAN, 
+    sweet_spot_tt BOOLEAN
+);
+
+ALTER TABLE black_hole ALTER COLUMN name SET NOT NULL;
+
+INSERT INTO galaxy (name, scientific_name, width, n_stars, speed, life, reach_100)
+VALUES 
+    ('Andromeda', 'andr_sc', 10, 10600400, 7, FALSE, TRUE),
+    ('Milky Way', 'mw_sc', 8, 50601407, 5, TRUE, TRUE),
+    ('Antennae', 'ant_sc', 7, 51451451, 3, FALSE, FALSE),
+    ('Butterfly', 'btfl_sc', 10, 736574567, 6, FALSE, FALSE),
+    ('Condor', 'cdor_sc', 3, 14514545, 4, FALSE, FALSE),
+    ('Eye of Sauron', 'eos_sc', 9, 976784567, 3, TRUE, FALSE);
+
+INSERT INTO star (name, scientific_name, radius, age, speed, life, supernova, galaxy_id)
+VALUES
+    ('Alpha', 'alpha_sc', 10, 1000000, 7, FALSE, FALSE, (SELECT galaxy_id from galaxy WHERE name='Andromeda')),
+    ('Beta', 'beta_sc', 8, 2000000, 6, FALSE, FALSE, (SELECT galaxy_id from galaxy WHERE name='Andromeda')),
+    ('Gama', 'gama_sc', 9, 3000000, 7, FALSE, FALSE, (SELECT galaxy_id from galaxy WHERE name='Andromeda')),
+    ('Sun', 'sun_sc', 3, 500000, 5, TRUE, FALSE, (SELECT galaxy_id from galaxy WHERE name='Milky Way')),
+    ('Sirius', 'sirius_sc', 5, 1000000, 2, FALSE, TRUE, (SELECT galaxy_id from galaxy WHERE name='Milky Way')),
+    ('Canopus', 'canopus_sc', 6, 700000, 1, FALSE, FALSE, (SELECT galaxy_id from galaxy WHERE name='Milky Way'));
+
+INSERT INTO planet (name, scientific_name, radius, age, speed, life, locked_orbit, star_id)
+VALUES
+    ('Earth', 'earth_sc', 2, 1000000, 7, TRUE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Mars', 'mars_sc', 1, 2000000, 6, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Saturn', 'strn_sc', 9, 3000000, 7, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Venus', 'venus_sc', 3, 500000, 5, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Mercury', 'mrcry_sc', 2, 1000000, 2, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Uranus', 'urns_sc', 4, 700000, 1, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Neptune', 'neptn_sc', 6, 700000, 1, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Jupiter', 'juptr_sc', 10, 700000, 1, FALSE, TRUE, (SELECT star_id from star WHERE name='Sun')),
+    ('Kepler', 'kepler_sc', 6, 700000, 1, FALSE, FALSE, (SELECT star_id from star WHERE name='Alpha')),
+    ('OGLE', 'ogle_sc', 4, 700000, 1, FALSE, FALSE, (SELECT star_id from star WHERE name='Alpha')),
+    ('Arion', 'arion_sc', 2, 700000, 1, FALSE, FALSE, (SELECT star_id from star WHERE name='Alpha')),
+    ('Orbitar', 'orbitr_sc', 7, 700000, 1, FALSE, FALSE, (SELECT star_id from star WHERE name='Alpha'));
+
+INSERT INTO moon (name, scientific_name, radius, age, speed, protection, rotation, planet_id)
+VALUES 
+    ('Luna', 'earth_moon', 10, 999999999, 7, TRUE, TRUE, (SELECT planet_id from planet WHERE name='Earth')),
+    ('Phobos', 'mars_moon', 8, 999999999, 7, TRUE, TRUE, (SELECT planet_id from planet WHERE name='Mars')),
+    ('Deimos', 'mars_moon', 5, 999999999, 7, TRUE, TRUE, (SELECT planet_id from planet WHERE name='Mars')),
+    ('Ganymede', 'jptr_moon', 15, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Callisto', 'jptr_moon', 14, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Io', 'jptr_moon', 13, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Europa', 'jptr_moon', 12, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Amalthea', 'jptr_moon', 11, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Himalia', 'jptr_moon', 10, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Thebe', 'jptr_moon', 9, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Elara', 'jptr_moon', 8, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Pasiphae', 'jptr_moon', 7, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Metis', 'jptr_moon', 7, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Carme', 'jptr_moon', 6, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Sinope', 'jptr_moon', 6, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Lysithea', 'jptr_moon', 5, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Ananke', 'jptr_moon', 4, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Leda', 'jptr_moon', 3, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Adrastea', 'jptr_moon', 3, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter')),
+    ('Callirrhoe', 'jptr_moon', 1, 999999999, 7, FALSE, TRUE, (SELECT planet_id from planet WHERE name='Jupiter'));
+
+INSERT INTO black_hole (name, scientific_name, radius, age, mass, destructive, sweet_spot_tt)
+VALUES 
+    ('bh1', 'bh1_sc', 10, 10600400, 7, FALSE, TRUE),
+    ('bh2', 'bh2_sc', 8, 50601407, 5, TRUE, TRUE),
+    ('bh3', 'bh3_sc', 9, 976784567, 3, TRUE, FALSE);
